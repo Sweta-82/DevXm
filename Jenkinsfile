@@ -2,28 +2,41 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USERNAME = credentials('docker-username')
-        DOCKER_PASSWORD = credentials('docker-password')
+        IMAGE = "sweta82/xm-app:latest"
     }
 
     stages {
+        stage('Check Docker') {
+            steps {
+                sh 'docker --version'
+            }
+        }
+
         stage('Docker Login') {
             steps {
-                sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t sweta82/xm-app:latest .'
+                sh 'docker build -t $IMAGE .'
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                sh 'docker push sweta82/xm-app:latest'
+                sh 'docker push $IMAGE'
             }
         }
 
+    }
+
+    post {
+        always {
+            sh 'docker logout || true'
+        }
     }
 }
