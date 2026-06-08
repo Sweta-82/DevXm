@@ -6,6 +6,19 @@ pipeline {
     }
 
     stages {
+        stage('Prepare') {
+            steps {
+                echo 'Preparing workspace and forcing SCM checkout for debugging'
+                checkout scm
+                sh '''
+                  echo "Running on node: $NODE_NAME"
+                  echo "Workspace: $(pwd)"
+                  echo "Git branch:"; git rev-parse --abbrev-ref HEAD || true
+                  echo "Files in workspace:"; ls -la || true
+                '''
+            }
+        }
+
         stage('Check Docker') {
             steps {
                 sh 'docker --version'
