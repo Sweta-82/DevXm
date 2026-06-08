@@ -1,5 +1,7 @@
-FROM node:20-alpine AS frontend
-COPY ./frontend /app
+# Build stage
+FROM node:20-alpine AS backend
 WORKDIR /app
+COPY package*.json ./
 RUN npm install
-RUN npm run build
+COPY . .
+CMD ["node", "server.js"]
